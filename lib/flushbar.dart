@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 
 import 'flushbar_route.dart' as route;
+import 'flushbar_route.dart';
 
 // ignore: constant_identifier_names
 const String FLUSHBAR_ROUTE_NAME = '/flushbarRoute';
@@ -243,18 +244,19 @@ class Flushbar<T> extends StatefulWidget {
   /// When this future finishes, it is guaranteed that Flushbar was dismissed.
   Future<T?> dismiss([T? result]) async {
     // If route was never initialized, do nothing
+    FlushbarRoute<T?>? flushbarRoute = this.flushbarRoute;
     if (flushbarRoute == null) {
       return null;
     }
 
-    if (flushbarRoute!.isCurrent) {
-      flushbarRoute!.navigator!.pop(result);
-      return flushbarRoute!.completed;
-    } else if (flushbarRoute!.isActive) {
+    if (flushbarRoute.isCurrent) {
+      flushbarRoute.navigator?.pop(result);
+      return flushbarRoute.completed;
+    } else if (flushbarRoute.isActive) {
       // removeRoute is called every time you dismiss a Flushbar that is not the top route.
       // It will not animate back and listeners will not detect FlushbarStatus.IS_HIDING or FlushbarStatus.DISMISSED
       // To avoid this, always make sure that Flushbar is the top route when it is being dismissed
-      flushbarRoute!.navigator!.removeRoute(flushbarRoute!);
+      flushbarRoute.navigator?.removeRoute(flushbarRoute);
     }
 
     return null;
@@ -265,7 +267,7 @@ class Flushbar<T> extends StatefulWidget {
     if (flushbarRoute == null) {
       return false;
     }
-    return flushbarRoute!.currentStatus == FlushbarStatus.SHOWING;
+    return flushbarRoute?.currentStatus == FlushbarStatus.SHOWING;
   }
 
   /// Checks if the flushbar is dismissed
@@ -273,21 +275,21 @@ class Flushbar<T> extends StatefulWidget {
     if (flushbarRoute == null) {
       return false;
     }
-    return flushbarRoute!.currentStatus == FlushbarStatus.DISMISSED;
+    return flushbarRoute?.currentStatus == FlushbarStatus.DISMISSED;
   }
 
   bool isAppearing() {
     if (flushbarRoute == null) {
       return false;
     }
-    return flushbarRoute!.currentStatus == FlushbarStatus.IS_APPEARING;
+    return flushbarRoute?.currentStatus == FlushbarStatus.IS_APPEARING;
   }
 
   bool isHiding() {
     if (flushbarRoute == null) {
       return false;
     }
-    return flushbarRoute!.currentStatus == FlushbarStatus.IS_HIDING;
+    return flushbarRoute?.currentStatus == FlushbarStatus.IS_HIDING;
   }
 
   @override
@@ -322,7 +324,8 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
 
     assert(
         widget.userInputForm != null ||
-            ((widget.message != null && widget.message!.isNotEmpty) ||
+            ((widget.message != null &&
+                    (widget.message?.isNotEmpty ?? false)) ||
                 widget.messageText != null),
         'A message is mandatory if you are not using userInputForm. Set either a message or messageText');
 
@@ -347,14 +350,14 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
     widget.progressIndicatorController?.dispose();
 
     _focusAttachment.detach();
-    _focusNode!.dispose();
+    _focusNode?.dispose();
     super.dispose();
   }
 
   void _configureLeftBarFuture() {
     SchedulerBinding.instance.addPostFrameCallback(
       (_) {
-        final keyContext = _backgroundBoxKey!.currentContext;
+        final keyContext = _backgroundBoxKey?.currentContext;
 
         if (keyContext != null) {
           final box = keyContext.findRenderObject() as RenderBox;
@@ -365,10 +368,10 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
   }
 
   void _configureProgressIndicatorAnimation() {
-    if (widget.showProgressIndicator &&
-        widget.progressIndicatorController != null) {
+    var progressIndicatorController = widget.progressIndicatorController;
+    if (widget.showProgressIndicator && progressIndicatorController != null) {
       _progressAnimation = CurvedAnimation(
-          curve: Curves.linear, parent: widget.progressIndicatorController!);
+          curve: Curves.linear, parent: progressIndicatorController);
     }
   }
 
@@ -382,16 +385,16 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
       ),
     );
 
-    _fadeController!.addStatusListener((status) {
+    _fadeController?.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        _fadeController!.reverse();
+        _fadeController?.reverse();
       }
       if (status == AnimationStatus.dismissed) {
-        _fadeController!.forward();
+        _fadeController?.forward();
       }
     });
 
-    _fadeController!.forward();
+    _fadeController?.forward();
   }
 
   //TODO : review EdgeInsets
@@ -436,8 +439,8 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
                   filter: ImageFilter.blur(
                       sigmaX: widget.barBlur, sigmaY: widget.barBlur),
                   child: Container(
-                    height: snapshot.data!.height,
-                    width: snapshot.data!.width,
+                    height: snapshot.data?.height,
+                    width: snapshot.data?.width,
                     decoration: BoxDecoration(
                       color: Colors.transparent,
                       borderRadius: widget.borderRadius,
@@ -699,20 +702,21 @@ class _FlushbarState<K extends Object?> extends State<Flushbar<K>>
       return FutureBuilder(
         future: _boxHeightCompleter.future,
         builder: (BuildContext buildContext, AsyncSnapshot<Size> snapshot) {
+          var borderRadius = widget.borderRadius;
           if (snapshot.hasData) {
             return Container(
               width: 8.0,
-              height: snapshot.data!.height,
+              height: snapshot.data?.height,
               decoration: BoxDecoration(
-                borderRadius: widget.borderRadius == null
+                borderRadius: borderRadius == null
                     ? null
                     : widget.textDirection == TextDirection.ltr
                         ? BorderRadius.only(
-                            topLeft: widget.borderRadius!.topLeft,
-                            bottomLeft: widget.borderRadius!.bottomLeft)
+                            topLeft: borderRadius.topLeft,
+                            bottomLeft: borderRadius.bottomLeft)
                         : BorderRadius.only(
-                            topRight: widget.borderRadius!.topRight,
-                            bottomRight: widget.borderRadius!.bottomRight),
+                            topRight: borderRadius.topRight,
+                            bottomRight: borderRadius.bottomRight),
                 color: widget.leftBarIndicatorColor,
               ),
             );
