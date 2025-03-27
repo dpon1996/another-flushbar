@@ -85,7 +85,7 @@ class FlushbarRoute<T> extends OverlayRoute<T> {
       );
     }
 
-    Widget child =  flushbar.isDismissible
+    Widget child = flushbar.isDismissible
         ? _getDismissibleFlushbar(_builder)
         : _getFlushbar();
 
@@ -186,11 +186,10 @@ class FlushbarRoute<T> extends OverlayRoute<T> {
         dismissibleKeyGen += '1';
         _cancelTimer();
         _wasDismissedBySwipe = true;
-
         if (isCurrent) {
-          navigator!.pop();
+          navigator?.pop();
         } else {
-          navigator!.removeRoute(this);
+          navigator?.removeRoute(this);
         }
       },
       child: _getFlushbar(),
